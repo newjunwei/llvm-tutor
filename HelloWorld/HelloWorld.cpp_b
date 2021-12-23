@@ -19,7 +19,6 @@
 //
 // License: MIT
 //=============================================================================
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
@@ -36,19 +35,15 @@ namespace {
 
 // This method implements what the pass does
 void visitor(Function &F) {
-  errs() << "(llvm-tutor) Hello from: " << F.getName() << "\n";
-  errs() << "(llvm-tutor)   number of arguments: " << F.arg_size() << "\n";
-  for (Argument *i = F.arg_begin(); i < F.arg_end(); i++) {
-    errs() << "(llvm-tutor) Hello from: " << i->getName() << "\n";
-  }
+    errs() << "(llvm-tutor) Hello from: "<< F.getName() << "\n";
+    errs() << "(llvm-tutor)   number of arguments: " << F.arg_size() << "\n";
 }
 
 // New PM implementation
 struct HelloWorld : PassInfoMixin<HelloWorld> {
   // Main entry point, takes IR unit to run the pass on (&F) and the
   // corresponding pass manager (to be queried if need be)
-  PreservedAnalyses run(Function &F,
-                        FunctionAnalysisManager &) { // todo run 是继承？
+  PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
     visitor(F);
     return PreservedAnalyses::all();
   }
@@ -88,9 +83,8 @@ llvm::PassPluginLibraryInfo getHelloWorldPluginInfo() {
 // This is the core interface for pass plugins. It guarantees that 'opt' will
 // be able to recognize HelloWorld when added to the pass pipeline on the
 // command line, i.e. via '-passes=hello-world'
-extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::
-    PassPluginLibraryInfo // todo 不懂这个语法
-    llvmGetPassPluginInfo() {
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo() {
   return getHelloWorldPluginInfo();
 }
 
@@ -109,8 +103,3 @@ static RegisterPass<LegacyHelloWorld>
       true, // This pass doesn't modify the CFG => true
       false // This pass is not a pure analysis pass => false
     );
-// Register for clang
-static RegisterStandardPasses Y(
-    PassManagerBuilder::EP_EarlyAsPossible,
-    [](const PassManagerBuilder &Builder,
-       legacy::PassManagerBase &PM) { PM.add(new LegacyHelloWorld()); });
